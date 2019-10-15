@@ -35,7 +35,6 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *da
   int lama = 0;
 }
 
-
 // Permet de trouver un objet qui porte tel nom
 objet* find_object_by_name(char* name)
 {
@@ -47,7 +46,6 @@ objet* find_object_by_name(char* name)
     }
   return to_return;
 }
-
 
 // Suppression d'un objet et mise à jour de la table FAT
 int supprimer_objet(char* nom)
@@ -68,4 +66,26 @@ void supprimer_tout(mp* master)
     {
       freeblocks++;
     }
+}
+
+/* ------------------------------------------------------------- */
+void test_initialiser_fat(mp* master)
+{
+  unsigned short* fat = initialise_fat(master);
+  unsigned short answer = 0;
+  for (size_t rank = 0; rank < BLOCNUM; rank++)
+    {
+      if (fat[rank] != EMPTY)
+        answer += 1;
+    }
+
+  if (answer == 0)
+    printf("Init_fat isOk!\n");
+  else
+    printf("Init_fat notOk! %hd\n",answer);
+}
+
+void test_creer_objet(void)
+{
+  system("echo lama");
 }
