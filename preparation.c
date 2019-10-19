@@ -13,15 +13,6 @@ typedef struct node {
 /* Insertion en "tête de liste" */
 void insertionTete(Lnode** ph,char item)
   {
-  /*  Lnode* cell;
-    Lnode* buffer;
-    cell = malloc(sizeof(Lnode));
-    buffer = *ph;
-
-    cell->data = item;
-    cell->link = buffer;
-    ph = &cell; */
-
     Lnode* cell;
     while(cell == NULL)
         cell = malloc(sizeof(Lnode));
