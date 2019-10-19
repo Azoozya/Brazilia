@@ -37,20 +37,13 @@ void insertionQueue(Lnode** ph,char item)
   {
     Lnode* cell;
     Lnode* buffer;
-    while(cell == NULL){
+    while(cell == NULL)
         cell = malloc(sizeof(Lnode));
-        printf("WESH\n");
-      }
     cell->data = item;
     cell->link = NULL;
 
     buffer = *ph;
-    if (buffer == NULL) printf("Etape 0\n");
-    while(buffer->link != NULL)
-    {
-      buffer = buffer->link;
-      printf("Etape + 1\n");
-    }
+    while(buffer->link != NULL) buffer = buffer->link;
     buffer->link = cell;
 
   }
