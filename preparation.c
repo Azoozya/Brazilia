@@ -5,33 +5,52 @@
 /* Ici, on est obligé d'utiliser la notation struct xxx,
 car la structure s'auto-référence!*/
 typedef struct node {
-		short data ;
+		char data ;
 		struct node *link ;
 		} Lnode ;
 
 
 /* Insertion en "tête de liste" */
-void insertionTete(Lnode** ph,short item)
+void insertionTete(Lnode** ph,char item)
   {
-    Lnode* cell;
-    cell = malloc(sizeof(Lnode));
-    cell->link = *ph;
-    cell->data = item;
-    ph = &cell;
-  }
-
-/* Insertion en "queue de liste" */
-void insertionQueue(Lnode** ph,short item)
-  {
-    Lnode* cell;
+  /*  Lnode* cell;
     Lnode* buffer;
     cell = malloc(sizeof(Lnode));
     buffer = *ph;
 
-    while(buffer != NULL) buffer = buffer->link;
+    cell->data = item;
+    cell->link = buffer;
+    ph = &cell; */
+
+    Lnode* cell;
+    while(cell == NULL)
+        cell = malloc(sizeof(Lnode));
 
     cell->data = item;
+    cell->link = *ph;
+    *ph = cell;
+
+  }
+
+/* Insertion en "queue de liste" */
+void insertionQueue(Lnode** ph,char item)
+  {
+    Lnode* cell;
+    Lnode* buffer;
+    while(cell == NULL){
+        cell = malloc(sizeof(Lnode));
+        printf("WESH\n");
+      }
+    cell->data = item;
     cell->link = NULL;
+
+    buffer = *ph;
+    if (buffer == NULL) printf("Etape 0\n");
+    while(buffer->link != NULL)
+    {
+      buffer = buffer->link;
+      printf("Etape + 1\n");
+    }
     buffer->link = cell;
 
   }
@@ -66,7 +85,7 @@ void listeAffiche(Lnode* ptr)
   	else
   		printf("Contenu de la liste : ") ;
   	while ( NULL != ptr ) 	{
-  		printf("%hd ",ptr->data);
+  		printf("%c ",ptr->data);
   		ptr = ptr->link ;
   		}
   	printf("\n") ;
