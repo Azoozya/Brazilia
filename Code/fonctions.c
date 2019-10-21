@@ -17,7 +17,7 @@ void my_strncpy(char* src,char* dst,int size)
     }
 }
 
-// Initialisation de la liste chainée FAT et mise à jour du master pointer
+// Initialisation de la table FAT et mise à jour du master pointer
 unsigned short* initialise_fat(mp* master)
 {
   freeblocks = 0;
@@ -32,7 +32,40 @@ unsigned short* initialise_fat(mp* master)
 //Création d'une entité objet et mise à jour du FAT et du master pointer
 void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *data, mp* master)
 {
-  int lama = 0;
+  objet* cell;
+  objet* previous = NULL;
+  cell = malloc(sizeof(objet));
+  int success;
+
+
+  cell->nom = nom;
+  cell->taille = taille;
+  cell->auteur = auteur;
+  cell->next = NULL;
+
+  do {
+    previous = reach_last_cell(obj);
+  } while (test_succes(previous) != YES);
+
+  cell->previous = previous;
+  previous->next = cell;
+
+  success = add_pointer_master(cell, master);
+  if (success != YES) printf("Création d'objet impossible\n");
+
+  if (succes == YES){
+    int nbr_blocs = (taille/BLOCSIZE) + 1;
+    int fat_index = 0;
+    while ((FAT[fat_index] != EMPTY) && (fat_index < BLOCNUM)) fat_index++;
+
+    if (fat_index < BLOCNUM) {
+      // C GRAVE CHIANT BOUDEL DE MIERDA !!! 
+      cell->index = fat_index;
+
+    }
+
+  }
+
 }
 
 // Permet de trouver un objet qui porte tel nom
