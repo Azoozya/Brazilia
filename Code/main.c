@@ -12,7 +12,7 @@ int main(int argc,char* argv[])
 	// 		add_pointer_master((void*)CHANGE_ME ,master);
 	// } while(test_succes(CHANGE_ME) != YES);
 
-	initialise_fat(master);
+	initialise_fat();
 	// objet* bwaa = creer_objet("dromadaire",50,2050,"lama",master);
 
 

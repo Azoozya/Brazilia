@@ -38,7 +38,7 @@ objet* previous;
 
 objet* obj;  // Pointe vers la 1ère valeur de la liste chainée d'objet
 char volume[BLOCSIZE * BLOCNUM];
-unsigned short FAT[BLOCNUM];
+unsigned short fat[BLOCNUM];
 unsigned short freeblocks;
 
 /* fonctions */
@@ -60,12 +60,12 @@ void delete_down(mp* head);
 int test_succes(void* name);
 void my_strncpy(char* src,char* dst,int size);
 
-unsigned short* initialise_fat(mp* master);
+void initialise_fat(void);
 void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *data, mp* master);
 objet* find_object_by_name(char* name);
 int lire_objet(objet* o,char **data);
 int supprimer_objet(char* nom);
-void supprimer_tout(mp* master);
+void supprimer_tout(void);
 
 /** POUR LES PLUS RAPIDES ..................** BONUS ** BONUS ** BONUS **
 \brief Cette fonction permet :
@@ -80,3 +80,7 @@ Attention à la taille !!!!!!!!!!!!!!
 
 /* test */
 void momo(void);
+void test_initialiser_fat(void);
+void test_creer_objet(void);
+void test_supprimer_objet(void);
+void test_supprimer_tout(void);
