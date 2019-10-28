@@ -60,6 +60,8 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *da
     cell->previous = previous;
     if (test_success(previous) == YES) previous->next = cell;
 
+//    if (test_success(obj) == NO) obj = cell;
+
 
     //Mise à jour de FAT
     if (success != YES)
