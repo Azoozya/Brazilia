@@ -57,7 +57,7 @@ mp* reach_last_cell_mp(mp* head);
 void delete_down(mp* head);
 
 /* fonctions */
-int test_succes(void* name);
+int test_success(void* name);
 void my_strncpy(char* src,char* dst,int size);
 
 void initialise_fat(void);

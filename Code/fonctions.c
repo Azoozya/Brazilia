@@ -1,6 +1,6 @@
 #include "header.h"
 
-int test_succes(void* name)
+int test_success(void* name)
 {
   if(name == NULL)
     return NO;
@@ -20,50 +20,74 @@ void my_strncpy(char* src,char* dst,int size)
 // Initialisation de la table FAT et mise à jour du master pointer
 void initialise_fat(void)
 {
-  freeblocks = 0;
+  for (int index = 0; i < BLOCNUM; i++)
+  {
+    fat[i] = EMPTY;
+    freeblocks++;
+  }
 }
 
 //Création d'une entité objet et mise à jour du FAT et du master pointer
 void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *data, mp* master)
 {
-  objet* previous = NULL;
-  int success = 0;
-  objet* cell;
-  do {
-  	cell = malloc(sizeof(objet));
-  	if (test_succes(cell) == YES)
-  		success = add_pointer_master((void*)cell ,master);
-  } while(test_succes(cell) != YES);
+  int nbr_blocs;
+  if ((taille/BLOCSIZE)%BLOCSIZE == 0) nbr_blocs = taille/BLOCSIZE;
+  else nbr_blocs = (taille/BLOCSIZE) + 1;
 
-
-
-  // cell->nom = nom;
-  cell->taille = taille;
-  cell->auteur = auteur;
-  cell->next = NULL;
-  // MET A JOUR FREEBLOCKS (sinon la fonction de test ne servira a pas grand chose)
-
-  previous = reach_last_cell_obj(obj);
-  cell->previous = previous;
-  //Si il n'ya pas de previous , quand c'est le 1er objet que l'on crée.
-  // previous->next = cell;
-
-  if (success != YES)
-    printf("Création d'objet impossible\n");
-
-  if (success == YES)
+  if (nbr_blocs > freeblocks) printf("Création d'objet impossible : Pas suffisament d'espace libre dans FAT\n");
+  else
   {
-    int nbr_blocs = (taille/BLOCSIZE) + 1;
-    int fat_index = 0;
-    while ((fat[fat_index] != EMPTY) && (fat_index < BLOCNUM))
-      fat_index++;
+    //création de l'objet et ajout dans le master_pointer
+    objet* previous = NULL;
+    int success = 0;
+    objet* cell;
+    char nameToReturn[NAMELEN];
+    do {
+      cell = malloc(sizeof(objet));
+      if (test_success(cell) == YES)
+        success = add_pointer_master((void*)cell ,master);
+    } while(test_success(cell) != YES);
 
-    if (fat_index < BLOCNUM)
-      {
-      // C GRAVE CHIANT BOUDEL DE MIERDA !!!
-        cell->index = fat_index;
-      }
-   }
+    for (int NameIndex = 0; NameIndex < NAMELEN; NameIndex++) nameToReturn[NameIndex] = *(nom + NameIndex);
+
+    cell->nom = nameToReturn;
+    cell->taille = taille;
+    cell->auteur = auteur;
+    cell->next = NULL;
+
+    previous = reach_last_cell_obj(obj);
+    cell->previous = previous;
+    if (test_success(previous) == YES) previous->next = cell;
+
+
+    //Mise à jour de FAT
+    if (success != YES)
+      printf("Création d'objet impossible\n");
+
+    if (success == YES)
+    {
+      int bloc_counter = nbr_blocs;
+      int fat_index = 0;
+      int save_FI;  //save_FI pour save_fat_index
+
+      while (fat[fat_index] == EMPTY) fat_index++;
+
+      cell->index = fat_index;
+      save_FI = fat_index;
+
+      do {
+        while (fat[fat_index] == EMPTY) fat_index++;
+
+        fat[save_FI] = fat_index;
+        save_FI = fat_index;
+        freeblocks--;
+        bloc_counter--;
+
+      } while (bloc_counter > 0);
+      
+      fat[fat_index] = LAST;
+    }
+  }
 }
 
 // Permet de trouver un objet qui porte tel nom
@@ -83,7 +107,7 @@ int supprimer_objet(char* nom)
 {
   objet* buffer = find_object_by_name(nom);
   // MET A JOUR FREEBLOCKS (sinon la fonction de test ne servira a pas grand chose)
-  if(test_succes(buffer) != YES)
+  if(test_success(buffer) != YES)
     return -1;
   else
     return 0;

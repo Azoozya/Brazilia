@@ -5,7 +5,7 @@ mp* create_master_pointer(void)
   mp* to_return;
   do {
      to_return = malloc(sizeof(mp));
-  } while(test_succes(to_return) != YES);
+  } while(test_success(to_return) != YES);
   to_return->next = NULL;
   to_return->previous = NULL;
   to_return->pointer = to_return;
@@ -19,7 +19,7 @@ int add_pointer_master(void* pointer,mp* master)
   do {
      buffer->next = malloc(sizeof(mp));
      counter++;
-  } while(test_succes(buffer->next) != YES && counter < MAX_TRY);
+  } while(test_success(buffer->next) != YES && counter < MAX_TRY);
 
   if (counter  == MAX_TRY || buffer->next == NULL)
     {
@@ -50,7 +50,7 @@ objet* reach_last_cell_obj(objet* head)
 {
   objet* to_return = head;
 
-  if (test_succes(head) == YES)
+  if (test_success(head) == YES)
   {
     while(to_return->next != NULL)
       {
@@ -65,7 +65,7 @@ mp* reach_last_cell_mp(mp* head)
 {
   mp* to_return = head;
 
-  if (test_succes(head) == YES)
+  if (test_success(head) == YES)
   {
     while(to_return->next != NULL)
       {

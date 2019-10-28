@@ -8,9 +8,9 @@ int main(int argc,char* argv[])
 	// char* CHANGE_ME;
 	// do {
 	// 	CHANGE_ME = malloc(sizeof(char));
-	// 	if (test_succes(CHANGE_ME) == YES)
+	// 	if (test_success(CHANGE_ME) == YES)
 	// 		add_pointer_master((void*)CHANGE_ME ,master);
-	// } while(test_succes(CHANGE_ME) != YES);
+	// } while(test_success(CHANGE_ME) != YES);
 
 	initialise_fat();
 	// objet* bwaa = creer_objet("dromadaire",50,2050,"lama",master);
