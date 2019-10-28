@@ -38,7 +38,7 @@ objet* previous;
 
 objet* obj;  // Pointe vers la 1ère valeur de la liste chainée d'objet
 char volume[BLOCSIZE * BLOCNUM];
-unsigned short fat[BLOCNUM];
+unsigned short* fat;
 unsigned short freeblocks;
 
 /* fonctions */

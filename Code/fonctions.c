@@ -20,9 +20,10 @@ void my_strncpy(char* src,char* dst,int size)
 // Initialisation de la table FAT et mise à jour du master pointer
 void initialise_fat(void)
 {
-  for (int index = 0; i < BLOCNUM; i++)
+  fat = malloc(sizeof(short) * BLOCNUM);
+  for (short index = 0; index < BLOCNUM; index++)
   {
-    fat[i] = EMPTY;
+    fat[index] = EMPTY;
     freeblocks++;
   }
 }
@@ -50,7 +51,7 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *da
 
     for (int NameIndex = 0; NameIndex < NAMELEN; NameIndex++) nameToReturn[NameIndex] = *(nom + NameIndex);
 
-    cell->nom = nameToReturn;
+    my_strncpy(nameToReturn, cell->nom, NAMELEN);
     cell->taille = taille;
     cell->auteur = auteur;
     cell->next = NULL;
@@ -84,7 +85,7 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *da
         bloc_counter--;
 
       } while (bloc_counter > 0);
-      
+
       fat[fat_index] = LAST;
     }
   }
