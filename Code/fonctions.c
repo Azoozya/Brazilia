@@ -97,11 +97,26 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *da
 objet* find_object_by_name(char* name)
 {
   objet* to_return = obj;
+  int success = 0;
+  int index = 0;
+  int verif = 0;
 
-  while (to_return->nom != name && to_return != NULL)
+  do
     {
-      to_return = to_return->next;
-    }
+	verif = 0;
+	index = 0;
+	    
+	while (verif == 0 && index < NAMELEN)
+	{
+		if(to_return->nom[index] != name[index]) verif = 1;
+		index++;
+	}
+	
+	if (verif == 1) to_return = to_return->next;
+	else success = 1;
+	
+    } while (success == 0 && to_return != NULL);
+    
   return to_return;
 }
 
