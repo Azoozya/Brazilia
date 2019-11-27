@@ -33,7 +33,6 @@ unsigned int taille;
 unsigned short auteur;
 unsigned short index;
 objet* next;
-objet* previous;
 };
 
 objet* obj;  // Pointe vers la 1ère valeur de la liste chainée d'objet

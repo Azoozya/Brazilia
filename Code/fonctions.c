@@ -17,7 +17,7 @@ void my_strncpy(char* src,char* dst,int size)
     }
 }
 
-// Initialisation de la table FAT et mise à jour du master pointer
+// Initialisation de la table FAT et de obj et mise à jour du master pointer
 void initialise_fat(void)
 {
   fat = malloc(sizeof(short) * BLOCNUM);
@@ -26,6 +26,10 @@ void initialise_fat(void)
     fat[index] = EMPTY;
     freeblocks++;
   }
+
+  obj = malloc(sizeof(objet));
+  obj->taille = 0;
+  obj->next = NULL;
 }
 
 //Création d'une entité objet et mise à jour du FAT et du master pointer
@@ -34,12 +38,13 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *da
   int nbr_blocs;
   if ((taille/BLOCSIZE)%BLOCSIZE == 0) nbr_blocs = taille/BLOCSIZE;
   else nbr_blocs = (taille/BLOCSIZE) + 1;
+  //Si taille n'est pas un multiple de BLOCSIZE, alors un bloc en plus est nécessaire pour stocké l'excedent de données
+
 
   if (nbr_blocs > freeblocks) printf("Création d'objet impossible : Pas suffisament d'espace libre dans FAT\n");
   else
   {
     //création de l'objet et ajout dans le master_pointer
-    objet* previous = NULL;
     int success = 0;
     objet* cell;
     char nameToReturn[NAMELEN];
@@ -55,10 +60,7 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *da
     cell->taille = taille;
     cell->auteur = auteur;
     cell->next = NULL;
-
-    previous = reach_last_cell_obj(obj);
-    cell->previous = previous;
-    if (test_success(previous) == YES) previous->next = cell;
+    obj->next = cell;
 
 //    if (test_success(obj) == NO) obj = cell;
 
@@ -97,28 +99,38 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *da
 objet* find_object_by_name(char* name)
 {
   objet* to_return = obj;
-  int success = 0;
-  int index = 0;
-  int verif = 0;
+  int verif = 1;
 
-  do
-    {
-	verif = 0;
-	index = 0;
-	    
-	while (verif == 0 && index < NAMELEN)
-	{
-		if(to_return->nom[index] != name[index]) verif = 1;
-		index++;
-	}
-	
-	if (verif == 1) to_return = to_return->next;
-	else success = 1;
-	
-    } while (success == 0 && to_return != NULL);
-    
+  while (to_return->next != NULL && verif != 0)
+  {
+    verif = strcmp(name,to_return->nom);
+    if (verif != 0) to_return = to_return->next;
+  }
+
   return to_return;
 }
+//   int success = 0;
+//   int index = 0;
+//   int verif = 0;
+//
+//   do
+//     {
+// 	verif = 0;
+// 	index = 0;
+//
+// 	while (verif == 0 && index < NAMELEN)
+// 	{
+// 		if(to_return->nom[index] != name[index]) verif = 1;
+// 		index++;
+// 	}
+//
+// 	if (verif == 1) to_return = to_return->next;
+// 	else success = 1;
+//
+//     } while (success == 0 && to_return != NULL);
+//
+//   return to_return;
+// }
 
 // Suppression d'un objet et mise à jour de la table FAT
 int supprimer_objet(char* nom)
