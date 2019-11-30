@@ -30,7 +30,7 @@ void my_strncpy(char* src,char* dst,int size)
     }
 }
 
-// Initialisation de la table FAT et de obj
+// Initialisation de la table FAT et de obj (obj sera la tête de la liste et agira en tant que telle et rien d'autre (absence de données))
 void initialise_fat(void)
 {
   fat = (unsigned short*)smalloc(sizeof(short) * BLOCNUM);
@@ -41,75 +41,11 @@ void initialise_fat(void)
   }
 
   obj = (objet*)smalloc(sizeof(objet));
-  my_strncpy(obj->nom,"\0",1);
+  my_strncpy("\0",obj->nom,1);
   obj->taille = 0;
   obj->auteur = 0;
   obj->index = 0;
   obj->next = NULL;
-}
-
-//Création d'une entité objet et mise à jour du FAT
-void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short* data)
-{
-  int nbr_blocs;
-  if ((taille/BLOCSIZE)%BLOCSIZE == 0) nbr_blocs = taille/BLOCSIZE;
-  else nbr_blocs = (taille/BLOCSIZE) + 1;
-  //Si taille n'est pas un multiple de BLOCSIZE, alors un bloc en plus est nécessaire pour stocké l'excedent de données
-
-
-  if (nbr_blocs > freeblocks) printf("Création d'objet impossible : Pas suffisament d'espace libre dans FAT\n");
-  else
-  {
-    //création de l'objet
-    int success = 0;
-    objet* cell = NULL;
-    //C'est une procédure y'a rien a return !
-    char name_to_return[NAMELEN] = "\0";
-    cell = smalloc(sizeof(objet));
-
-    for (int name_index = 0; name_index < NAMELEN; name_index++) name_to_return[name_index] = *(nom + name_index);
-
-    //Tu ajoutes le fichier dans la liste chaînée avant ton test de possibilité
-    my_strncpy(name_to_return, cell->nom, NAMELEN);
-    cell->taille = taille;
-    cell->auteur = auteur;
-    cell->next = NULL;
-    obj->next = cell;
-
-//    if (test_success(obj) == NO) obj = cell;
-
-
-    //Mise à jour de FAT
-    //if else ?
-    if (success != YES)
-      printf("Création d'objet impossible\n");
-
-    if (success == YES)
-    {
-      int bloc_counter = nbr_blocs;
-      int fat_index = 0;
-      //Donne lui une valeur par défaut !
-      int save_FI;  //save_FI pour save_fat_index
-
-      //Segfault en cas de FAT vierge
-      while (fat[fat_index] == EMPTY) fat_index++;
-
-      cell->index = fat_index;
-      save_FI = fat_index;
-
-      do {
-        while (fat[fat_index] == EMPTY) fat_index++;
-
-        fat[save_FI] = fat_index;
-        save_FI = fat_index;
-        freeblocks--;
-        bloc_counter--;
-
-      } while (bloc_counter > 0);
-
-      fat[fat_index] = LAST;
-    }
-  }
 }
 
 // Permet de trouver un objet qui porte tel nom
@@ -124,48 +60,158 @@ objet* find_object_by_name(char* name)
     if (verif != 0) to_return = to_return->next;
   }
 
+  if (verif != 0) to_return = NULL;
   return to_return;
 }
-//   int success = 0;
-//   int index = 0;
-//   int verif = 0;
-//
-//   do
-//     {
-// 	verif = 0;
-// 	index = 0;
-//
-// 	while (verif == 0 && index < NAMELEN)
-// 	{
-// 		if(to_return->nom[index] != name[index]) verif = 1;
-// 		index++;
-// 	}
-//
-// 	if (verif == 1) to_return = to_return->next;
-// 	else success = 1;
-//
-//     } while (success == 0 && to_return != NULL);
-//
-//   return to_return;
-// }
+
+/*
+ int success = 0;
+ int index = 0;
+ int verif = 0;
+
+ do
+   {
+ verif = 0;
+ index = 0;
+
+ while (verif == 0 && index < NAMELEN)
+ {
+   if(to_return->nom[index] != name[index]) verif = 1;
+   index++;
+ }
+
+ if (verif == 1) to_return = to_return->next;
+ else success = 1;
+
+   } while (success == 0 && to_return != NULL);
+
+ return to_return;
+} */
+
+
+//Création d'une entité objet et mise à jour du FAT
+void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short* data)
+{
+  int nbr_blocs;
+  if ((taille/BLOCSIZE)%BLOCSIZE == 0) nbr_blocs = taille/BLOCSIZE;
+  else nbr_blocs = (taille/BLOCSIZE) + 1;
+  //Si taille n'est pas un multiple de BLOCSIZE, alors un bloc en plus est nécessaire pour stocké l'excedent de données
+  objet* name_test = find_object_by_name(nom);
+
+  if (name_test != NULL) printf("Création d'objet impossible : nom déjà donné à un objet\n");
+  else if (fat == NULL) printf("Création d'objet impossible : FAT non initialisée\n");
+  else if (nbr_blocs > freeblocks) printf("Création d'objet impossible : Pas suffisament d'espace libre dans FAT\n");
+  else
+  {
+    objet* previous = obj;
+
+    //création de l'objet
+    objet* cell = NULL;
+    //C'est une procédure y'a rien a return !
+    char name_of_cell[NAMELEN] = "\0";
+    cell = smalloc(sizeof(objet));
+
+    for (int name_index = 0; name_index < NAMELEN; name_index++) name_of_cell[name_index] = *(nom + name_index);
+
+    //Tu ajoutes le fichier dans la liste chaînée avant ton test de possibilité
+    my_strncpy(name_of_cell, cell->nom, NAMELEN);
+    cell->taille = taille;
+    cell->auteur = auteur;
+    cell->next = NULL;
+    while (previous->next != NULL) previous = previous->next;
+    previous->next = cell;
+
+    for (int indexA = 0; indexA < BLOCNUM; indexA++) printf("%x ",fat[indexA]);
+    printf("\n\n");
+    //Mise à jour de FAT
+    int bloc_counter = nbr_blocs;
+    int fat_index = 0;
+    //Donne lui une valeur par défaut !
+    int save_FI = 0;  //save_FI pour save_fat_index
+
+    //Segfault en cas de FAT vierge
+    while (fat[fat_index] == EMPTY) fat_index++;
+
+    cell->index = fat_index;
+    save_FI = fat_index;
+
+    do {
+      fat[save_FI] = fat_index;
+      save_FI = fat_index;
+      freeblocks--;
+      bloc_counter--;
+      while (fat[fat_index] != EMPTY && bloc_counter > 0) fat_index++;
+
+    } while (bloc_counter > 0);
+
+    fat[save_FI] = LAST;
+
+  }
+}
+
 
 // Suppression d'un objet et mise à jour de la table FAT
 int supprimer_objet(char* nom)
 {
-  objet* buffer = find_object_by_name(nom);
+  objet* previous = NULL;
+  objet* object_to_delete = find_object_by_name(nom);
   // MET A JOUR FREEBLOCKS (sinon la fonction de test ne servira a pas grand chose)
-  if(test_success(buffer) != YES)
+  if(test_success(object_to_delete) != YES)
+  {
+    printf("Suppression impossible : Objet non existant\n");
     return -1;
+  }
   else
+  {
+    unsigned short fat_index = object_to_delete->index;
+    unsigned short fat_buffer = 0;
+    while (strcmp(previous->next->nom,nom) != 0 && previous != object_to_delete) previous = previous->next;
+    if (previous == object_to_delete)
+    {
+      printf("Suppression impossible : Erreur recherche précédent\n");
+      return -1;
+    }
+    else
+    {
+      previous->next = object_to_delete->next;
+      free(object_to_delete);
+    }
+
+    //MAJ de FAT
+    do
+    {
+      fat_buffer = fat[fat_index];
+      fat[fat_index] = EMPTY;
+      fat_index = fat_buffer;
+      freeblocks++;
+    } while (fat_index != LAST);
+
     return 0;
+  }
 }
 
+// Supprime tous les éléments de la liste chainée d'objets et vide la table FAT
 void supprimer_tout(void)
 {
   // Supprime les éléments de la liste chainée d'objets
+  objet* to_delete = obj->next;
+  objet* buffer = NULL;
+
+  while(to_delete != NULL)
+  {
+    buffer = to_delete->next;
+    free(to_delete);
+    to_delete = buffer;
+  }
+
+  // Vide la liste FAT
   for(int depth = 0 ; depth < BLOCNUM ; depth++)
     {
-      freeblocks++;
+      if (fat[depth] != EMPTY)
+      {
+        fat[depth] = EMPTY;
+        freeblocks++;
+      }
     }
 }
 
