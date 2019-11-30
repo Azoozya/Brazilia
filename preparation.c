@@ -26,10 +26,12 @@ void insertionTete(Lnode** ph,char item)
 /* Insertion en "queue de liste" */
 void insertionQueue(Lnode** ph,char item)
   {
-    Lnode* cell;
-    Lnode* buffer;
-    while(cell == NULL)
-        cell = malloc(sizeof(Lnode));
+    Lnode* cell = NULL;
+    Lnode* buffer = NULL;
+    do{
+			cell = malloc(sizeof(Lnode));
+		} while (cell == NULL);
+
     cell->data = item;
     cell->link = NULL;
 
@@ -43,7 +45,7 @@ void insertionQueue(Lnode** ph,char item)
 void suppressionTete(Lnode** ph)
   {
     Lnode* buffer = *ph;
-    ph = &(buffer->link);
+    *ph = buffer->link;
     free(buffer);
   }
 
@@ -54,7 +56,7 @@ void suppressionQueue(Lnode** ph)
     Lnode* buffer2;
     buffer = *ph;
 
-    while(buffer->link != NULL) buffer = buffer->link;
+    while(buffer->link->link != NULL) buffer = buffer->link;
 
     buffer2 = buffer->link;
     buffer->link = NULL;
