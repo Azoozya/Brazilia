@@ -48,19 +48,12 @@ struct REPLACE_ME
     REPLACE_ME* next;
 };
 
-/* master_pointer */
-mp* create_master_pointer(void);
-int add_pointer_master(void* pointer,mp* master);
-objet* reach_last_cell_obj(objet* head);
-mp* reach_last_cell_mp(mp* head);
-void delete_down(mp* head);
-
 /* fonctions */
 int test_success(void* name);
 void my_strncpy(char* src,char* dst,int size);
 
 void initialise_fat(void);
-void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *data, mp* master);
+void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *data);
 objet* find_object_by_name(char* name);
 int lire_objet(objet* o,char **data);
 int supprimer_objet(char* nom);
@@ -78,7 +71,6 @@ Attention à la taille !!!!!!!!!!!!!!
 /* main (devrait être vide) */
 
 /* test */
-void momo(void);
 void test_initialiser_fat(void);
 void test_creer_objet(void);
 void test_supprimer_objet(void);
