@@ -30,16 +30,6 @@ void my_strncpy(char* src,char* dst,int size)
     }
 }
 
-int my_strncmp(char* src, char* dst, int size)
-{
-  int success = 0;
-  for(int rank = 0; rank < size; rank++)
-  {
-    if (src[rank] != dst[rank]) success = -1;
-  }
-  return success;
-}
-
 // Initialisation de la table FAT et de obj (obj sera la tête de la liste et agira en tant que telle et rien d'autre (absence de données))
 void initialise_fat(void)
 {
@@ -70,9 +60,9 @@ objet* find_object_by_name(char* name)
   objet* to_return = obj;
   int verif = 1;
 
-  while (to_return->next != NULL && verif != 0)
+  while (to_return != NULL && verif != 0)
   {
-    verif = my_strncmp(name,to_return->nom,NAMELEN);
+    verif = strncmp(name,to_return->nom,NAMELEN);
     if (verif != 0) to_return = to_return->next;
   }
 
@@ -136,8 +126,6 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short* da
     cell->next = NULL;
     while (previous->next != NULL) previous = previous->next;
     previous->next = cell;
-
-    printf("%s\n",cell->nom);
 
     //Mise à jour de FAT
     int bloc_counter = nbr_blocs;
