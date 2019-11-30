@@ -6,5 +6,6 @@ int main(int argc,char* argv[])
 	test_creer_objet();
 	test_supprimer_objet();
 	test_supprimer_tout();
+	printf("Arrivée à la fin\n");
 	return 0;
 }

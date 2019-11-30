@@ -51,6 +51,8 @@ struct REPLACE_ME
 /* fonctions */
 int test_success(void* name);
 void my_strncpy(char* src,char* dst,int size);
+int my_strncmp(char* src, char* dst, int size);
+
 
 void initialise_fat(void);
 void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *data);
