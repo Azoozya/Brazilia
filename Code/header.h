@@ -36,7 +36,7 @@ objet* next;
 };
 
 objet* obj;  // Pointe vers la 1ère valeur de la liste chainée d'objet
-char volume[BLOCSIZE * BLOCNUM];
+char** volume;
 unsigned short* fat;
 unsigned short freeblocks;
 
@@ -53,7 +53,7 @@ int test_success(void* name);
 void my_strncpy(char* src,char* dst,int size);
 
 void initialise_fat(void);
-void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short *data);
+void creer_objet(char* nom, unsigned short auteur,unsigned int taille, char *data);
 objet* find_object_by_name(char* name);
 int lire_objet(objet* o,char **data);
 int supprimer_objet(char* nom);

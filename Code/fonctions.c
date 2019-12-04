@@ -30,27 +30,24 @@ void my_strncpy(char* src,char* dst,int size)
     }
 }
 
-// Initialisation de la table FAT et de obj (obj sera la tÃªte de la liste et agira en tant que telle et rien d'autre (absence de donnÃ©es))
+// Initialisation de la table FAT et de obj (obj sera la tête de la liste et agira en tant que telle et rien d'autre (absence de données))
 void initialise_fat(void)
 {
   if (fat == NULL)
   {
     fat = (unsigned short*)smalloc(sizeof(short) * BLOCNUM);
+    freeblocks = 0;
     for (short index = 0; index < BLOCNUM; index++)
     {
       fat[index] = EMPTY;
       freeblocks++;
     }
   }
-
-  if (obj == NULL)
+  if (volume == NULL)
   {
-    obj = (objet*)smalloc(sizeof(objet));
-    my_strncpy("\0",obj->nom,1);
-    obj->taille = 0;
-    obj->auteur = 0;
-    obj->index = 0;
-    obj->next = NULL;
+	volume = (char**)smalloc(sizeof(char*) * BLOCNUM);
+	/*for(int index = 0; index < BLOCNUM; index++)
+	   *(volume+index) = (char*)smalloc(sizeof(char) * BLOCSIZE);*/
   }
 }
 
@@ -70,70 +67,50 @@ objet* find_object_by_name(char* name)
   return to_return;
 }
 
-/*
- int success = 0;
- int index = 0;
- int verif = 0;
 
- do
-   {
- verif = 0;
- index = 0;
-
- while (verif == 0 && index < NAMELEN)
- {
-   if(to_return->nom[index] != name[index]) verif = 1;
-   index++;
- }
-
- if (verif == 1) to_return = to_return->next;
- else success = 1;
-
-   } while (success == 0 && to_return != NULL);
-
- return to_return;
-} */
-
-
-//CrÃ©ation d'une entitÃ© objet et mise Ã  jour du FAT
-void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short* data)
+//Création d'une entité objet et mise à jour de la table FAT
+void creer_objet(char* nom, unsigned short auteur,unsigned int taille, char* data)
 {
-  int nbr_blocs;
+  int nbr_blocs = 0;
   if ((taille/BLOCSIZE)%BLOCSIZE == 0) nbr_blocs = taille/BLOCSIZE;
   else nbr_blocs = (taille/BLOCSIZE) + 1;
-  //Si taille n'est pas un multiple de BLOCSIZE, alors un bloc en plus est nÃ©cessaire pour stockÃ© l'excedent de donnÃ©es
+  //Si taille n'est pas un multiple de BLOCSIZE, alors un bloc en plus est nécessaire pour stocker l'excedent de données
+	
   objet* name_test = find_object_by_name(nom);
 
-  if (name_test != NULL) printf("CrÃ©ation d'objet impossible : nom dÃ©jÃ  donnÃ© Ã  un objet\n");
-  else if (fat == NULL) printf("CrÃ©ation d'objet impossible : FAT non initialisÃ©e\n");
-  else if (nbr_blocs > freeblocks) printf("CrÃ©ation d'objet impossible : Pas suffisament d'espace libre dans FAT\n");
+  if (name_test != NULL) printf("Création d'objet impossible : nom déjà  donné à un objet\n");
+  else if (fat == NULL) printf("Création d'objet impossible : FAT non initialisée\n"); //Pour vérifier que FAT a bien été initialisée
+  else if (nbr_blocs > freeblocks) printf("Création d'objet impossible : Pas suffisament d'espace libre dans FAT\n");
   else
   {
-    objet* previous = obj;
+    objet* previous = NULL;
+    if (obj != NULL) previous = obj;
 
-    //crÃ©ation de l'objet
+    //création de l'objet
     objet* cell = NULL;
-    //C'est une procÃ©dure y'a rien a return !
     char name_of_cell[NAMELEN] = "\0";
     cell = smalloc(sizeof(objet));
 
     for (int name_index = 0; name_index < NAMELEN; name_index++) name_of_cell[name_index] = *(nom + name_index);
 
-    //Tu ajoutes le fichier dans la liste chaÃ®nÃ©e avant ton test de possibilitÃ©
     my_strncpy(name_of_cell, cell->nom, NAMELEN);
     cell->taille = taille;
     cell->auteur = auteur;
     cell->next = NULL;
-    while (previous->next != NULL) previous = previous->next;
-    previous->next = cell;
-
-    //Mise Ã  jour de FAT
+    if (obj == NULL) obj = cell;
+    else 
+    {
+	while (previous->next != NULL) previous = previous->next;
+	previous->next = cell;
+    }
+    
+    //Mise à jour de FAT et VOLUME
     int bloc_counter = nbr_blocs;
     int fat_index = 0;
-    //Donne lui une valeur par dÃ©faut !
+    int vol = 0;
+    int vol_index = 0;
     int save_FI = 0;  //save_FI pour save_fat_index
 
-    //Segfault en cas de FAT vierge
     while (fat[fat_index] != EMPTY) fat_index++;
 
     cell->index = fat_index;
@@ -141,6 +118,12 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short* da
 
     do {
       fat[save_FI] = fat_index;
+	    
+      vol = vol_index*BLOCSIZE;
+      *(volume+save_FI) = (char*)smalloc(sizeof(char) * BLOCSIZE);
+      my_strncpy((data+vol), *(volume+save_FI), BLOCSIZE);
+      vol_index++;
+	    
       save_FI = fat_index;
       freeblocks--;
       bloc_counter--;
@@ -149,22 +132,20 @@ void creer_objet(char* nom, unsigned short auteur,unsigned int taille, short* da
     } while (bloc_counter > 0);
 
     fat[save_FI] = LAST;
-
-    // for (int indexA = 0; indexA < BLOCNUM; indexA++) printf("%x ",fat[indexA]);
-    // printf("\n\n\n");
-
+       vol = vol_index*BLOCSIZE;
+      *(volume+save_FI) = (char*)smalloc(sizeof(char) * BLOCSIZE);
+      my_strncpy((data+vol), *(volume+save_FI), BLOCSIZE);
+        
   }
 }
 
 
-// Suppression d'un objet et mise Ã  jour de la table FAT
+// Suppression d'un objet et mise à jour de la table FAT et de VOLUME
 int supprimer_objet(char* nom)
 {
   objet *previous = obj;
-  // objet *buffer = NULL;
   objet* object_to_delete = find_object_by_name(nom);
 
-  // MET A JOUR FREEBLOCKS (sinon la fonction de test ne servira a pas grand chose)
   if(test_success(object_to_delete) != YES)
   {
     printf("Suppression impossible : Objet non existant\n");
@@ -179,7 +160,7 @@ int supprimer_objet(char* nom)
 
     if (previous == object_to_delete)
     {
-      printf("Suppression impossible : Erreur recherche prÃ©cÃ©dent\n");
+      printf("Suppression impossible : Erreur recherche précédent\n");
       return -1;
     }
     else
@@ -188,11 +169,12 @@ int supprimer_objet(char* nom)
       free(object_to_delete);
     }
 
-    //MAJ de FAT
+    //MAJ de FAT et VOLUME
     do
     {
       fat_buffer = fat[fat_index];
       fat[fat_index] = EMPTY;
+      free(*(volume+fat_index));
       fat_index = fat_buffer;
       freeblocks++;
     } while (fat_index != LAST);
@@ -201,10 +183,10 @@ int supprimer_objet(char* nom)
   }
 }
 
-// Supprime tous les Ã©lÃ©ments de la liste chainÃ©e d'objets et vide la table FAT
+// Supprime tous les éléments de la liste chainée d'objets et vide la table FAT
 void supprimer_tout(void)
 {
-  // Supprime les Ã©lÃ©ments de la liste chainÃ©e d'objets
+  // Suppression des éléments de la liste chainée d'objets
   objet* to_delete = obj->next;
   objet* buffer = NULL;
 
@@ -215,12 +197,13 @@ void supprimer_tout(void)
     to_delete = buffer;
   }
 
-  // Vide la liste FAT
+  // Vidange de la liste FAT
   for(int depth = 0 ; depth < BLOCNUM ; depth++)
     {
       if (fat[depth] != EMPTY)
       {
         fat[depth] = EMPTY;
+	free(*(volume + depth));
         freeblocks++;
       }
     }
@@ -255,27 +238,28 @@ void test_creer_objet(void)
   unsigned short tmp = freeblocks;
   objet* buffer = obj;
   char name[] = "Chameau";
-  short data[] = {5,7,8,9,10};
+  char *data = malloc(sizeof(char) * 300);
+	for (int data_index = 0; data_index < 300; data_index++) data[data_index] = 'A';
 
   //Test si il y'a eu variation de freeblocks
   creer_objet(name,10,10,data);
-  printf("[CrÃ©er objet] Avant : %d , AprÃ¨s : %d\n",tmp,freeblocks);
+  printf("[Créer objet] Avant : %d , Après : %d\n",tmp,freeblocks);
 
-  //Test si les valeurs qu'on lui a donnÃ© ont Ã©tÃ© enregistrÃ©
+  //Test si les valeurs qu'on lui a donné ont été enregistrées
   buffer = find_object_by_name(name);
   if (buffer == NULL)
-    printf("[CrÃ©er objet] L'objet n'a pas Ã©tÃ© crÃ©e.\n");
+    printf("[Créer objet] L'objet n'a pas été crée.\n");
   else if (strcmp(buffer->nom,name) || buffer->taille != 10 || buffer->auteur != 10)
-    printf("[CrÃ©er objet] L'objet a Ã©tÃ© mal crÃ©e %s:%s %u:%u %u:%u \n",buffer->nom,name,buffer->taille,10,buffer->auteur,10);
+    printf("[Créer objet] L'objet a été mal crée %s:%s %u:%u %u:%u \n",buffer->nom,name,buffer->taille,10,buffer->auteur,10);
   else
-    printf("[CrÃ©er objet] L'objet a bien Ã©tÃ© crÃ©e\n");
-
+    printf("[Créer objet] L'objet a bien été crée\n");
+  supprimer_tout();
 }
 
 void test_supprimer_objet(void)
 {
-  char name[] = "Chameau";
-  short data[] = {5,7,8,9,10};
+  char name[] = "Bonjout";
+  char data[] = {5,7,8,9,10};
 
   creer_objet(name,10,10,data);
 
@@ -289,25 +273,30 @@ void test_supprimer_objet(void)
 
 void test_supprimer_tout(void)
 {
-  char name1[] = "Chameau";
+  char name1[] = "Lama";
   char name2[] = "Dromadaire";
+  char data1[] = {1,2,3,4,6};
+  char data2[] = {5,7,8,9,10};
+
 
   initialise_fat();
 
   unsigned short tmp = freeblocks;
-  creer_objet(name1,10,10,NULL);
-  creer_objet(name2,20,20,NULL);
+  creer_objet(name1,10,10,data1);
+  creer_objet(name2,20,20,data2);
+
 
   unsigned short tmp2 = freeblocks;
 
   supprimer_tout();
-  //On vÃ©rifie qu'il y'a une variation de freeblocks.
-  if (tmp > freeblocks  && tmp2 < freeblocks)     // On ne devrait pas plutÃ´t vÃ©rifiÃ© pour tmp SUPERIEUR ou Ã©gal Ã  freeblocks, voire mÃªme seulement Ã©gal ?
+  
+  //On vérifie qu'il y'a une variation de freeblocks.
+  if (tmp == freeblocks  && tmp2 < freeblocks)
     printf("[Supprimer tout] Avant : %d , Pendant : %d , AprÃ¨s : %d\n",tmp,tmp2,freeblocks);
-  else if (tmp < freeblocks && tmp2 < freeblocks)
+  else if (tmp < tmp2 && tmp2 < freeblocks)
     printf("[Supprimer tout] creer_objet ne change pas freeblocks\n");
-  else if (tmp2 > freeblocks && tmp > freeblocks)
-    printf("[Supprimer tout] supprimer tout ne change pas freeblocks\n");
+  else if (tmp2 >= freeblocks && tmp > freeblocks)
+    printf("[Supprimer tout] supprimer_tout ne change pas freeblocks\n");
   else
     printf("[Supprimer tout] creer_objet ET suprimmer_tout ne changes pas freeblocks\n");
 
